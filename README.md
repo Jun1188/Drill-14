@@ -29,6 +29,8 @@
 - `.vscode` 설정은 **Drill-14 자체를 연 경우** 적용한다. 부모 폴더를 열었다면 하위 설정이 자동 적용된다고 가정하지 않는다.
 - VS Code에서 `Python: Select Interpreter`로 pico2d가 있는 Python 3.13을 선택한다. 기존 터미널은 닫고 새 터미널을 연다.
 - F5는 `Drill-14: Python 3.13 (pico2d)` 구성을 사용한다.
+- 이 PC의 VS Code·F5·Code Runner·새 터미널에는 실제 `C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe` 경로를 지정했다. 다른 PC에서는 이 설정을 해당 PC의 Python 경로로 바꾼다.
+- 디버그 로그의 Python 경로가 `/Programs/...`로 시작하면 환경 변수 치환이 비어 있는 상태다. `Python: Select Interpreter`에서 위 실행 파일을 직접 선택하고 `Developer: Reload Window` 후 F5를 다시 실행한다.
 - 실행 파일 경로 기준으로 이미지를 읽으므로 다른 작업 폴더에서도 `main.py`의 전체 경로로 실행할 수 있다.
 
 ## 파일과 호출 흐름

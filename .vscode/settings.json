@@ -1,13 +1,13 @@
 ﻿{
-    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+    "python.defaultInterpreterPath": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
     "python.terminal.executeInFileDir": true,
     "terminal.integrated.env.windows": {
-        "PATH": "${env:LOCALAPPDATA}/Programs/Python/Python313;${env:LOCALAPPDATA}/Programs/Python/Python313/Scripts;${env:PATH}"
+        "PATH": "C:/Users/변준영/AppData/Local/Programs/Python/Python313;C:/Users/변준영/AppData/Local/Programs/Python/Python313/Scripts;${env:PATH}"
     },
     "code-runner.runInTerminal": true,
     "code-runner.fileDirectoryAsCwd": true,
     "code-runner.executorMap": {
-        "python": "& \"$env:LOCALAPPDATA/Programs/Python/Python313/python.exe\" -u"
+        "python": "& \"C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe\" -u"
     },
     "files.encoding": "utf8bom"
 }

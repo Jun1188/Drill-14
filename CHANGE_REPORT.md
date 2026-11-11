@@ -403,17 +403,18 @@ exit $LASTEXITCODE
 
 ```json
 {
-    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+    "python.defaultInterpreterPath": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
     "python.terminal.executeInFileDir": true,
     "terminal.integrated.env.windows": {
-        "PATH": "${env:LOCALAPPDATA}/Programs/Python/Python313;${env:LOCALAPPDATA}/Programs/Python/Python313/Scripts;${env:PATH}"
+        "PATH": "C:/Users/변준영/AppData/Local/Programs/Python/Python313;C:/Users/변준영/AppData/Local/Programs/Python/Python313/Scripts;${env:PATH}"
     },
     "code-runner.runInTerminal": true,
     "code-runner.fileDirectoryAsCwd": true,
     "code-runner.executorMap": {
-        "python": "& \"$env:LOCALAPPDATA/Programs/Python/Python313/python.exe\" -u"
+        "python": "& \"C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe\" -u"
     },
-    "files.encoding": "utf8bom"
+    "files.encoding": "utf8bom",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
 ```
 
@@ -433,7 +434,7 @@ exit $LASTEXITCODE
             "name": "Drill-14: Python 3.13 (pico2d)",
             "type": "debugpy",
             "request": "launch",
-            "python": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+            "python": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
             "program": "${workspaceFolder}/main.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
@@ -467,3 +468,92 @@ venv/
 원격 publish, Public 확인, 원격 파일·커밋 수 확인과 e-Class 제출은 사용자 작업으로 남아 있다.
 
 실행에 필요한 임시·더미 파일은 만들지 않았다. PNG, 문서, 실행 설정과 `.git`은 최종 산출물이다.
+
+## 후속 단계 23: 실제 인터프리터 경로 고정
+
+- 근거: 사용자 debugpy 로그의 실행 파일이 `/Programs/Python/Python313/python.exe`로 전달되어 WinError 2 발생.
+- 해결: F5·기본 인터프리터·새 터미널 PATH·Code Runner를 실제 Python 3.13 절대 경로로 지정.
+- 사용자 기존 변경: python-envs.defaultEnvManager는 보존하되 커밋하지 않는다. 이 항목은 아래 after에도 나타나지만 이번 작업의 추가 항목이 아니다.
+- 텍스트는 UTF-8 BOM으로 저장한다. 게임 로직은 바꾸지 않는다.
+- 위 전체 소스의 VS Code after 블록도 현재 설정으로 갱신했다. 아래 before는 이번 오류 수정 직전이다.
+- 원격 publish는 수행하지 않는다. 실행과 디버거 성공은 사용자가 F5로 확인한다.
+
+### 단계 23: .vscode/settings.json
+
+**before:**
+
+```json
+{
+    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+    "python.terminal.executeInFileDir": true,
+    "terminal.integrated.env.windows": {
+        "PATH": "${env:LOCALAPPDATA}/Programs/Python/Python313;${env:LOCALAPPDATA}/Programs/Python/Python313/Scripts;${env:PATH}"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.fileDirectoryAsCwd": true,
+    "code-runner.executorMap": {
+        "python": "& \"$env:LOCALAPPDATA/Programs/Python/Python313/python.exe\" -u"
+    },
+    "files.encoding": "utf8bom",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}
+```
+
+**after:**
+
+```json
+{
+    "python.defaultInterpreterPath": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
+    "python.terminal.executeInFileDir": true,
+    "terminal.integrated.env.windows": {
+        "PATH": "C:/Users/변준영/AppData/Local/Programs/Python/Python313;C:/Users/변준영/AppData/Local/Programs/Python/Python313/Scripts;${env:PATH}"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.fileDirectoryAsCwd": true,
+    "code-runner.executorMap": {
+        "python": "& \"C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe\" -u"
+    },
+    "files.encoding": "utf8bom",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}
+```
+
+### 단계 23: .vscode/launch.json
+
+**before:**
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Drill-14: Python 3.13 (pico2d)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+            "program": "${workspaceFolder}/main.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
+```
+
+**after:**
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Drill-14: Python 3.13 (pico2d)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
+            "program": "${workspaceFolder}/main.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
+```

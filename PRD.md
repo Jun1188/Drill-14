@@ -84,7 +84,7 @@
 | 정확한 날갯짓 | 0~13 프레임 순서, dt 누적, 아래 기준 좌표 변환 | 원본 이미지·소스 열람, 사용자 시각 확인 대기 |
 | bird_animation.png 활용 | lec16 PNG 그대로 포함, Bird.image 공유 | 파일 복사, 실행 중 최초 1회 로드는 사용자 확인 대기 |
 | 상세 최종 commit log | 최종 커밋 본문에 ANIMATION_LOGIC.md 전체 설명 포함 | 로컬 기록 |
-| 충분한 개발 기록 | 실제 개발 단계 01~22 | 로컬 22커밋, 원격은 사용자 publish 후 확인 |
+| 충분한 개발 기록 | 실제 개발 단계 01~22 및 인터프리터 오류 수정 23 | 로컬 23커밋, 원격은 사용자 publish 후 확인 |
 | PRD와 독립 저장소 | 이 문서와 Drill-14/.git | 로컬 작성 |
 | 실행 코드와 이미지 업로드 | 로컬 파일 준비 | 원격 publish는 사용자 담당 |
 | 수업 시간·마감·e-Class | 사진에 시각 없음 | 사용자 과제 안내·제출 결과 확인 필요 |
@@ -93,3 +93,11 @@
 상세 원리와 계산: ANIMATION_LOGIC.md 및 가장 마지막 커밋 본문.
 최종 커밋 해시는 `git log -1 --format=%h`, 개수는 `git rev-list --count HEAD`로 확인할 수 있다.
 원격 Public 설정, 원격 커밋 수, 원격 업로드와 e-Class 제출은 확인하지 않았다.
+
+## 후속 수정 23: 사용자 디버그 오류
+
+- 사용자 로그: debugpy가 `/Programs/Python/Python313/python.exe`를 실행하려다 WinError 2로 실패.
+- 원인: 실행 명령에서 LOCALAPPDATA 환경 변수 치환 결과가 비어 있었음. 환경 변수 전달이 비어 있었던 경위는 미확정.
+- 변경: Drill-14의 `.vscode/launch.json`, `.vscode/settings.json`에서 실제 존재하는 Python 3.13 절대 경로 사용. 사용자 추가 설정은 보존.
+- 관련 문서: README.md의 재실행 절차, ANIMATION_LOGIC.md의 원인과 남은 확인, CHANGE_REPORT.md의 전체 차이.
+- 실행·테스트: 사용자가 인터프리터 재선택과 창 재로드 후 F5로 확인. Codex는 실행하지 않음.
