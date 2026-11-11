@@ -30,3 +30,5 @@ class Bird:
         self.y = float(y)
         self.frame = float(frame) % FRAME_COUNT
         self.direction = 1
+    def update(self):
+        self.frame = (self.frame + FRAMES_PER_SECOND * game_framework.frame_time) % FRAME_COUNT
