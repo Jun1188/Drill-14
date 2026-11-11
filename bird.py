@@ -50,3 +50,7 @@ class Bird:
             self.direction = 1
         elif self.x == right:
             self.direction = -1
+    def draw(self):
+        left, bottom, width, height = frame_rectangle(Bird.image, self.frame)
+        Bird.image.clip_draw(left, bottom, width, height,
+                             self.x, self.y, DRAW_WIDTH, DRAW_HEIGHT)
