@@ -1,6 +1,12 @@
 ﻿"""LEC16의 시간 기반 이동을 14프레임 새 이미지에 적용한다."""
 
-from config import FRAME_COUNT, SPRITE_COLUMNS, SPRITE_ROWS
+from pathlib import Path
+
+from pico2d import load_image
+
+import game_framework
+from config import (CANVAS_WIDTH, DRAW_HEIGHT, DRAW_WIDTH, FLY_SPEED_PPS,
+                    FRAME_COUNT, FRAMES_PER_SECOND, SPRITE_COLUMNS, SPRITE_ROWS)
 
 
 def frame_rectangle(image, frame):
@@ -12,3 +18,15 @@ def frame_rectangle(image, frame):
     top = row * image.h // SPRITE_ROWS
     bottom = (row + 1) * image.h // SPRITE_ROWS
     return left, image.h - bottom, right - left, bottom - top
+
+class Bird:
+    image = None
+
+    def __init__(self, x, y, frame=0.0):
+        if Bird.image is None:
+            image_path = Path(__file__).resolve().with_name('bird_animation.png')
+            Bird.image = load_image(str(image_path))
+        self.x = float(x)
+        self.y = float(y)
+        self.frame = float(frame) % FRAME_COUNT
+        self.direction = 1
