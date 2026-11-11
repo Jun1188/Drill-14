@@ -1,0 +1,13 @@
+﻿{
+    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
+    "python.terminal.executeInFileDir": true,
+    "terminal.integrated.env.windows": {
+        "PATH": "${env:LOCALAPPDATA}/Programs/Python/Python313;${env:LOCALAPPDATA}/Programs/Python/Python313/Scripts;${env:PATH}"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.fileDirectoryAsCwd": true,
+    "code-runner.executorMap": {
+        "python": "& \"$env:LOCALAPPDATA/Programs/Python/Python313/python.exe\" -u"
+    },
+    "files.encoding": "utf8bom"
+}
