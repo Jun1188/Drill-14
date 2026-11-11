@@ -1,16 +1,12 @@
-﻿# 전체 변경 대조와 단계별 개발 기록
+﻿# 전체 변경 대조와 실제 개발 기록
 
-## 작업 경계
+최초 작업 전 Drill-14 폴더는 없었다. 아래 전체 파일의 최초 before는 없음이다.
+최종 after는 LEC16 소년 장면과 새 레이어를 함께 포함한다. 원본 labs와 다른 DRILL은 수정하지 않았다.
+단계 01~23은 초기 구현·인터프리터 수정, 24는 원본 복원, 25는 계층·크기 변경이다.
+단계 26은 이 문서의 최종 동기화와 run.ps1 경로 수정 커밋이다.
+사용자 기존 python-envs.defaultEnvManager는 아래 현재 설정에 포함되지만 이번 작업의 추가·커밋 항목이 아니다.
 
-작업 시작 시 `Drill-14` 폴더는 없었다. 이 문서의 before는 모든 파일에 대해 **없음**이다.
-기존 labs와 다른 DRILL은 수정하지 않았다. 같은 부모 폴더 아래 새 독립 저장소만 만들었다.
-수업 소스의 참고·복사와 이번 폴더의 before/after를 구분한다.
-아래 코드는 이 문서를 작성하는 시점의 전체 원문이다. 게임 실행·테스트 결과를 의미하지 않는다.
-
-## 단계별 커밋
-
-단계 01~20은 다음 실제 커밋에 대응한다. 단계 21은 이 문서를 추가한 커밋이고, 단계 22는 PRD 완료 상태와 ANIMATION_LOGIC.md를 포함한 마지막 커밋이다.
-각 커밋의 전체 차이는 `git show <해시>`로 볼 수 있다. 최종 상세 구현 설명은 `git log -1 --format=%B`로 읽는다.
+## 실제 커밋
 
 ```text
 a3bb6c3 step 01: define Drill 14 photo requirements and development stages
@@ -33,35 +29,36 @@ f239d02 step 17: handle Escape and window close and release the shared bird imag
 7215782 step 18: provide pinned pico2d dependencies and a Python 3.13 launcher
 86532f0 step 19: align editor debug runner and new terminals with Python 3.13
 61902c0 step 20: document user-run acceptance checks and Public publishing handoff
+fcb2473 step 21: record complete source before-after and genuine development commits
+c98d2ac step 22: 새 10마리 왕복 비행 완료 및 정확한 애니메이션 구현 논리
+54bf22a step 23: fix debugpy WinError 2 by pinning the existing Python 3.13 path
+713daff step 24: restore the original lec16 boy grass ball sources and complete assets
+ee87aba step 25: keep the lec16 boy scene and add ten smaller birds in their own layer
 ```
 
-## 수업 코드에서 바꾼 점
+## 후속 수정의 before/after 근거
 
-- `game_world.py`: LEC16의 계층형 목록, 복사 순회, 삭제, clear를 재사용했다. 오타 API `add_oject`를 `add_object`로 통일하고 새 호출부에서도 같은 이름을 사용한다.
-- `game_framework.py`: 모드 수명 구조를 재사용했다. `time.time()` 대신 단조 시계 `time.perf_counter()`를 사용하고, 현재 프레임의 경과 시간을 update 전에 계산한다. 사용하지 않는 `1 / frame_time` 계산을 제거하여 0초 분모를 없앴다. 종료 입력 뒤에는 update/render에 진입하지 않는다.
-- `main.py`: 수업과 같은 1600×600 캔버스, play_mode 시작. finally로 캔버스 종료를 보장한다.
-- `play_mode.py`: Boy/Grass 대신 Bird 10개를 등록한다. 수업의 월드 갱신·그리기·0.01초 delay 방식을 따른다. 종료 시 월드와 공유 이미지 참조를 해제한다.
-- `bird.py`: 수업 Boy의 시간 기반 애니메이션과 이동 개념을 재사용한다. PNG 14개 좌표, 1회 이미지 로드, 새별 상태, 경계 반사와 좌우 반전을 적용한다.
-- 이미지와 코드의 경로는 실행 시 부모 labs에 의존하지 않는다.
+- 단계 23 수정 전: `git show c98d2ac:.vscode/launch.json` 및 `.vscode/settings.json`.
+- 원본 복원 전 전체 상태: `git show 54bf22a:<파일>`.
+- 단계 24: `git show 713daff`에서 Boy/Grass/Ball·자산 추가 및 main의 작업 폴더 설정 확인.
+- 단계 25: `git show ee87aba`에서 원본 play_mode 유지, 별도 BIRDS 계층과 60×55 확인.
+- 전체 후속 차이: `git diff 54bf22a HEAD`.
+- 원본 API add_oject를 보존하고 기존 add_object를 별칭으로 유지한다.
+- 원본 파일의 위치·보존 범위는 ASSETS.md, 최종 계산과 논리는 ANIMATION_LOGIC.md를 따른다.
 
 ## 입력 → 상태/변환 → 출력
 
-1. `main()`에서 캔버스를 연 뒤 프레임워크를 시작한다.
-2. `play_mode.init()`가 각 새의 x/y, 날갯짓 위상과 오른쪽 방향을 설정한다. PNG는 최초 Bird 생성 때만 로드한다.
-3. 프레임워크가 경과 시간 dt를 구하고 종료 이벤트를 처리한다.
-4. 월드가 각 새의 update를 호출한다. 프레임은 `(기존 프레임 + 14 × dt) % 14`, 위치는 `x + 방향 × 277.78 × dt`로 갱신한다.
-5. 좌우 한계를 넘으면 초과분을 반사하고 방향을 바꾼다. 긴 프레임은 화면 내부에 들어올 때까지 반복 반사한다.
-6. 프레임 정수부를 위→아래 행 순서의 crop 좌표로 바꾼다. draw는 방향에 따라 수평 반전을 선택한다.
-7. ESC 또는 창 닫기로 루프를 끝내고 finish 이후 캔버스를 닫는다.
+main이 코드 폴더를 작업 폴더로 설정하고 캔버스를 연다.
+원본 Boy·Grass를 생성한 뒤 별도 계층에 Bird 10개를 등록한다.
+원본 소년 입력을 처리하고 각 계층의 update/draw를 순서대로 호출한다.
+새는 이미지 1장을 공유하면서 각자의 frame/x/direction을 dt로 갱신하고 경계에서 반사한다.
+소년·배경·공 위에 작은 새가 함께 그려진다. 종료 시 월드를 비운 후 캔버스를 닫는다.
 
-## 전체 before / after
+## 전체 소스 before/after
 
-새 코드만 있으므로 파일 전체를 하나의 추가 블록으로 제시한다. binary PNG는 편집하지 않은 원본 복사이며 ASSETS.md에 위치와 크기를 기록했다.
-문서 산출물은 PRD.md, ASSETS.md, README.md, MANUAL_CHECKS.md, 이 문서, ANIMATION_LOGIC.md다.
+각 파일의 before는 최초 생성 기준으로 없음이다. 후속 수정의 중간 before는 위 실제 Git 리비전에서 보존한다.
 
 ### config.py
-
-단계: 04: 화면, 단위, 주기
 
 **before:** 없음.
 
@@ -73,8 +70,8 @@ f239d02 step 17: handle Escape and window close and release the shared bird imag
 CANVAS_WIDTH = 1600
 CANVAS_HEIGHT = 600
 BIRD_COUNT = 10
-DRAW_WIDTH = 120
-DRAW_HEIGHT = 110
+DRAW_WIDTH = 60
+DRAW_HEIGHT = 55
 
 SPRITE_COLUMNS = 5
 SPRITE_ROWS = 3
@@ -91,17 +88,27 @@ FLY_SPEED_PPS = FLY_SPEED_MPS * PIXEL_PER_METER
 
 ### game_world.py
 
-단계: 05: 수업 월드 관리
-
 **before:** 없음.
 
 **after:**
 
 ```python
-world = [[], [], []]  # 0: 배경, 1: 오브젝트, 2: UI
+"""LEC16 월드에 새 전용 계층을 추가한다."""
 
-def add_object(o, depth=1):
+BACKGROUND = 0
+OBJECTS = 1
+BIRDS = 2
+UI = 3
+world = [[], [], [], []]
+
+
+def add_oject(o, depth=OBJECTS):
     world[depth].append(o)
+
+
+# 원본 LEC16의 호출과 기존 Drill-14의 호출을 모두 유지한다.
+add_object = add_oject
+
 
 def remove_object(o):
     for layer in world:
@@ -109,18 +116,17 @@ def remove_object(o):
             layer.remove(o)
             return
 
+
 def update():
     for layer in world:
         for o in layer[:]:
             o.update()
-            
+
 
 def render():
     for layer in world:
         for o in layer[:]:
             o.draw()
-
-
 
 
 def clear():
@@ -129,8 +135,6 @@ def clear():
 ```
 
 ### game_framework.py
-
-단계: 06~07: 수업 프레임워크와 경과 시간
 
 **before:** 없음.
 
@@ -194,8 +198,6 @@ def run(start_mode):
 ```
 
 ### bird.py
-
-단계: 08~14: 좌표, 공유 이미지, 시간 기반 상태, 반사, 그리기
 
 **before:** 없음.
 
@@ -263,74 +265,319 @@ class Bird:
         )
 ```
 
-### play_mode.py
-
-단계: 15, 17: 10마리 월드와 이벤트·해제
+### boy.py
 
 **before:** 없음.
 
 **after:**
 
 ```python
-"""LEC16의 play_mode 역할: 새 10마리의 생성, 갱신, 렌더."""
+from math import pi
 
-from pico2d import (SDL_KEYDOWN, SDL_QUIT, SDLK_ESCAPE, clear_canvas, delay,
-                    get_events, update_canvas)
+from pico2d import *
+from sdl2 import (SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT,
+                  SDLK_SPACE)
+from transitions import Machine
+
+import game_world
+from ball import Ball
 
 import game_framework
+
+
+
+
+
+class Idle:
+    def enter(self, boy):
+        boy.idle_started_at = get_time()
+        boy.frame = 0
+
+    def do(self, boy):
+        if get_time() - boy.idle_started_at >= 5.0:
+            boy.fall_asleep()
+        else:
+            boy.frame = (boy.frame + 1) % 8
+
+    def draw(self, boy):
+        row = 300 if boy.face_dir == 1 else 200
+        boy.image.clip_draw(boy.frame * 100, row, 100, 100, boy.x, boy.y)
+
+    def space(self, boy):
+        boy.fire_ball()
+
+    def move(self, boy):
+        boy.start_run()
+
+
+class Sleep:
+    def enter(self, boy):
+        boy.frame = 0
+
+    def do(self, boy):
+        pass
+
+    def draw(self, boy):
+        angle = pi / 2 if boy.face_dir == 1 else -pi / 2
+        flip = '' if boy.face_dir == 1 else 'h'
+        boy.image.clip_composite_draw(
+            boy.frame * 100, 300, 100, 100,
+            angle, flip, boy.x, boy.y - 30, 100, 100
+        )
+
+    def space(self, boy):
+        boy.wake_up()
+
+    def move(self, boy):
+        boy.start_run()
+
+
+class Run:
+    def enter(self, boy):
+        boy.frame = 0
+
+    def do(self, boy): #게임 - 물리적인 크기, 단위를 정하고 가는 게 중요하다
+        PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
+        RUN_SPEED_KMPH = 20.0  # Km / Hour
+        RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+        RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+        RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER) # Pixel per Second, 게임세계 내에서의 최종 속도 보정
+
+        STRIDE_LENGTH_M = 1.8 # 보폭 길이
+        RUN_FRAMES_PER_STRIDE = 5 # 1개 보폭에 대한 애니메이션 프레임 
+        # 프레임 증가 속도, 즉 1초당 몇개 프레임을 증가시켜야 하는가? 
+        RUN_FRAMES_PER_SECOND = RUN_SPEED_MPS / STRIDE_LENGTH_M * RUN_FRAMES_PER_STRIDE 
+        boy.frame = (boy.frame +  RUN_FRAMES_PER_SECOND * game_framework.frame_time) % 8
+        boy.x += boy.dir * RUN_SPEED_PPS * game_framework.frame_time
+        boy.x = max(25, min(get_canvas_width() - 25, boy.x))
+
+    def draw(self, boy):
+        row = 100 if boy.face_dir == 1 else 0
+        boy.image.clip_draw(int(boy.frame) * 100, row, 100, 100, boy.x, boy.y)
+
+    def space(self, boy):
+        boy.fire_ball()
+
+    def move(self, boy):
+        pass
+
+
+class Boy:
+    def __init__(self):
+        self.font = load_font('ENCR10B.TTF', 16)
+        self.x, self.y = 400, 90
+        self.frame = 0
+        self.image = load_image('animation_sheet.png')
+        self.idle_started_at = get_time()
+        self.dir = 0
+        self.face_dir = 1
+        self.pressed_keys = set()
+        self.item = 'Ball'
+
+        self.states = {'IDLE': Idle(), 'SLEEP': Sleep(), 'RUN': Run()}
+
+        self.machine = Machine(
+            model=self,
+            states=['IDLE', 'SLEEP', 'RUN'],
+            transitions=[
+                {'trigger': 'fall_asleep',
+                 'source': 'IDLE', 'dest': 'SLEEP'},
+                {'trigger': 'wake_up',
+                 'source': 'SLEEP', 'dest': 'IDLE'},
+                {'trigger': 'start_run',
+                 'source': ['IDLE', 'SLEEP'], 'dest': 'RUN'},
+                {'trigger': 'stop_run',
+                 'source': 'RUN', 'dest': 'IDLE'},
+            ],
+            initial='IDLE',
+            auto_transitions=False,
+        )
+
+    def on_enter_IDLE(self):
+        self.states['IDLE'].enter(self)
+
+    def on_enter_SLEEP(self):
+        self.states['SLEEP'].enter(self)
+
+    def on_enter_RUN(self):
+        self.states['RUN'].enter(self)
+
+    def fire_ball(self):
+        if self.item is None:
+            return
+        ball = Ball(self.x, self.y, self.face_dir * 10, 1 if self.item == 'Ball' else 2)
+        game_world.add_oject(ball)
+
+    def pause(self):
+        self.pressed_keys.clear()
+        if self.state == 'RUN':
+            self.dir = 0
+            self.stop_run()
+
+    def handle_event(self, event):
+        if event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
+            self.states[self.state].space(self)
+            return
+
+        if (event.type not in (SDL_KEYDOWN, SDL_KEYUP) or
+                event.key not in (SDLK_LEFT, SDLK_RIGHT)):
+            return
+
+        if event.type == SDL_KEYDOWN:
+            self.pressed_keys.add(event.key)
+        else:
+            self.pressed_keys.discard(event.key)
+
+        direction = (int(SDLK_RIGHT in self.pressed_keys) -
+                     int(SDLK_LEFT in self.pressed_keys))
+
+        if direction != 0:
+            self.dir = direction
+            self.face_dir = direction
+            self.states[self.state].move(self)
+        elif self.state == 'RUN':
+            self.dir = 0
+            self.stop_run()
+
+    def update(self):
+        self.states[self.state].do(self)
+
+    def draw(self):
+        self.states[self.state].draw(self)
+        self.font.draw(self.x - 60, self.y + 50, f'(Time: {get_time():.2f}), Frame Time: {game_framework.frame_time:.2f} fps', (255, 255, 255))
+```
+
+### ball.py
+
+**before:** 없음.
+
+**after:**
+
+```python
+from pico2d import get_canvas_width, load_image
+
 import game_world
+
+
+class Ball:
+    images = {}
+
+    def __init__(self, x, y, velocity, ball_type=1):
+        if ball_type not in Ball.images:
+            Ball.images[ball_type] = load_image(
+                'ball21x21.png' if ball_type == 1 else 'ball41x41.png')
+        self.image = Ball.images[ball_type]
+        self.x, self.y = x, y
+        self.velocity = velocity
+
+    def update(self):
+        self.x += self.velocity
+        if self.x < 0 or self.x > get_canvas_width():
+            game_world.remove_object(self)
+
+    def draw(self):
+        self.image.draw(self.x, self.y)
+```
+
+### grass.py
+
+**before:** 없음.
+
+**after:**
+
+```python
+from pico2d import *
+
+class Grass:
+    def __init__(self):
+        self.image = load_image('grass.png')
+        self.ruler_image = load_image('ruler.png')
+
+    def update(self):
+        pass
+
+    def draw(self):
+        self.image.draw(400, 30)
+        self.image.draw(1200, 30)
+        self.ruler_image.draw(800, 350)
+```
+
+### play_mode.py
+
+**before:** 없음.
+
+**after:**
+
+```python
+from pico2d import *
+import game_world
+import game_framework
+from boy import Boy
+from grass import Grass
 from bird import Bird
 from config import BIRD_COUNT, CANVAS_HEIGHT, CANVAS_WIDTH, FRAME_COUNT
 
+boy = None
+
+
+def handle_events():
+
+
+    event_list = get_events()
+    for event in event_list:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+            return
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            game_framework.quit()
+        else:
+            boy.handle_event(event)
+
 
 def init():
+    global boy
+
     game_world.clear()
+    boy = Boy()
+    game_world.add_oject(boy, game_world.OBJECTS)
+
+    grass = Grass()
+    game_world.add_oject(grass, game_world.BACKGROUND)
+
     for index in range(BIRD_COUNT):
         row, column = divmod(index, 5)
         x = (column + 1) * CANVAS_WIDTH / 6
         y = (row + 1) * CANVAS_HEIGHT / 3 + (column - 2) * 12
         frame = index * FRAME_COUNT / BIRD_COUNT
-        game_world.add_object(Bird(x, y, frame))
+        game_world.add_oject(Bird(x, y, frame), game_world.BIRDS)
+
+
+def pause():
+    boy.pause()
+
+
+def resume():
+    pass
+
+
+def finish():
+    global boy
+    game_world.clear()
+    boy = None
+    Bird.image = None
 
 
 def update():
     game_world.update()
-    delay(0.01)
-
+    delay(0.01)  # 0.01초마다 업데이트, 100fps로 동작하게 됨
 
 def render():
     clear_canvas()
     game_world.render()
     update_canvas()
-
-
-def handle_events():
-    for event in get_events():
-        if event.type == SDL_QUIT:
-            game_framework.quit()
-            return
-        if event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
-            return
-
-
-def finish():
-    game_world.clear()
-    # 캔버스가 닫히기 전에 공유 텍스처 참조를 해제한다.
-    Bird.image = None
-
-
-def pause():
-    pass
-
-
-def resume():
-    pass
 ```
 
 ### main.py
-
-단계: 16: 캔버스 진입점
 
 **before:** 없음.
 
@@ -338,6 +585,9 @@ def resume():
 
 ```python
 """Drill 14 실행 진입점. 작업 폴더와 무관하게 이 파일을 실행한다."""
+
+import os
+from pathlib import Path
 
 from pico2d import close_canvas, open_canvas
 
@@ -347,6 +597,8 @@ from config import CANVAS_HEIGHT, CANVAS_WIDTH
 
 
 def main():
+    # LEC16의 상대 리소스 경로를 폴더 단독 실행에서도 유지한다.
+    os.chdir(Path(__file__).resolve().parent)
     open_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
     try:
         game_framework.run(play_mode)
@@ -360,8 +612,6 @@ if __name__ == '__main__':
 
 ### requirements.txt
 
-단계: 18: 의존성 고정
-
 **before:** 없음.
 
 **after:**
@@ -370,11 +620,10 @@ if __name__ == '__main__':
 pico2d==1.5.1
 PySDL2==0.9.17
 pysdl2-dll==2.32.10
+transitions==0.9.3
 ```
 
 ### run.ps1
-
-단계: 18: 실행 인터프리터 선택
 
 **before:** 없음.
 
@@ -382,20 +631,18 @@ pysdl2-dll==2.32.10
 
 ```powershell
 param(
-    [string]$Python = (Join-Path $env:LOCALAPPDATA 'Programs\Python\Python313\python.exe')
+    [string]$Python = 'C:\Users\변준영\AppData\Local\Programs\Python\Python313\python.exe'
 )
 
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
-    throw 'Python 3.13이 없습니다. -Python 인수로 pico2d가 설치된 실행 파일을 지정하세요.'
+    throw 'Python 실행 파일이 없습니다. -Python 인수로 pico2d와 transitions가 설치된 실행 파일을 지정하세요.'
 }
 & $Python (Join-Path $PSScriptRoot 'main.py')
 exit $LASTEXITCODE
 ```
 
 ### .vscode/settings.json
-
-단계: 19: 편집기·Code Runner·새 터미널
 
 **before:** 없음.
 
@@ -420,8 +667,6 @@ exit $LASTEXITCODE
 
 ### .vscode/launch.json
 
-단계: 19: F5 디버거
-
 **before:** 없음.
 
 **after:**
@@ -445,13 +690,11 @@ exit $LASTEXITCODE
 
 ### .gitignore
 
-단계: 02: 생성 파일 제외
-
 **before:** 없음.
 
 **after:**
 
-```gitignore
+```text
 __pycache__/
 *.py[cod]
 .venv/
@@ -462,98 +705,7 @@ venv/
 
 ## 사용자 확인과 남은 상태
 
-실행 명령과 실제 확인 항목은 README.md, MANUAL_CHECKS.md를 따른다.
-화면에서 10마리·14프레임·양방향 왕복·반전·정상 종료를 확인하는 작업은 사용자가 진행한다.
-빌드, 게임 실행, 테스트, 자동 검증기는 실행하지 않았다. 학습 내용의 사용자 이해 확인도 수행하지 않았다.
-원격 publish, Public 확인, 원격 파일·커밋 수 확인과 e-Class 제출은 사용자 작업으로 남아 있다.
-
-실행에 필요한 임시·더미 파일은 만들지 않았다. PNG, 문서, 실행 설정과 `.git`은 최종 산출물이다.
-
-## 후속 단계 23: 실제 인터프리터 경로 고정
-
-- 근거: 사용자 debugpy 로그의 실행 파일이 `/Programs/Python/Python313/python.exe`로 전달되어 WinError 2 발생.
-- 해결: F5·기본 인터프리터·새 터미널 PATH·Code Runner를 실제 Python 3.13 절대 경로로 지정.
-- 사용자 기존 변경: python-envs.defaultEnvManager는 보존하되 커밋하지 않는다. 이 항목은 아래 after에도 나타나지만 이번 작업의 추가 항목이 아니다.
-- 텍스트는 UTF-8 BOM으로 저장한다. 게임 로직은 바꾸지 않는다.
-- 위 전체 소스의 VS Code after 블록도 현재 설정으로 갱신했다. 아래 before는 이번 오류 수정 직전이다.
-- 원격 publish는 수행하지 않는다. 실행과 디버거 성공은 사용자가 F5로 확인한다.
-
-### 단계 23: .vscode/settings.json
-
-**before:**
-
-```json
-{
-    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
-    "python.terminal.executeInFileDir": true,
-    "terminal.integrated.env.windows": {
-        "PATH": "${env:LOCALAPPDATA}/Programs/Python/Python313;${env:LOCALAPPDATA}/Programs/Python/Python313/Scripts;${env:PATH}"
-    },
-    "code-runner.runInTerminal": true,
-    "code-runner.fileDirectoryAsCwd": true,
-    "code-runner.executorMap": {
-        "python": "& \"$env:LOCALAPPDATA/Programs/Python/Python313/python.exe\" -u"
-    },
-    "files.encoding": "utf8bom",
-    "python-envs.defaultEnvManager": "ms-python.python:system"
-}
-```
-
-**after:**
-
-```json
-{
-    "python.defaultInterpreterPath": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
-    "python.terminal.executeInFileDir": true,
-    "terminal.integrated.env.windows": {
-        "PATH": "C:/Users/변준영/AppData/Local/Programs/Python/Python313;C:/Users/변준영/AppData/Local/Programs/Python/Python313/Scripts;${env:PATH}"
-    },
-    "code-runner.runInTerminal": true,
-    "code-runner.fileDirectoryAsCwd": true,
-    "code-runner.executorMap": {
-        "python": "& \"C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe\" -u"
-    },
-    "files.encoding": "utf8bom",
-    "python-envs.defaultEnvManager": "ms-python.python:system"
-}
-```
-
-### 단계 23: .vscode/launch.json
-
-**before:**
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Drill-14: Python 3.13 (pico2d)",
-            "type": "debugpy",
-            "request": "launch",
-            "python": "${env:LOCALAPPDATA}/Programs/Python/Python313/python.exe",
-            "program": "${workspaceFolder}/main.py",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        }
-    ]
-}
-```
-
-**after:**
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Drill-14: Python 3.13 (pico2d)",
-            "type": "debugpy",
-            "request": "launch",
-            "python": "C:/Users/변준영/AppData/Local/Programs/Python/Python313/python.exe",
-            "program": "${workspaceFolder}/main.py",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        }
-    ]
-}
-```
+로컬 코드·설정·리소스·문서와 단계별 커밋을 작성했다. 모든 수정 텍스트는 UTF-8 BOM이다.
+사용자는 README와 MANUAL_CHECKS를 따라 실행한다. 게임·디버거·빌드·테스트·검증기는 실행하지 않았다.
+원격 Public publish·원격 파일와 커밋 수 확인·e-Class 제출은 수행하지 않았다.
+기존 사용자 설정 변경은 별도로 남겼다. 기능에 필요 없는 더미·임시 산출물은 만들지 않았다.
