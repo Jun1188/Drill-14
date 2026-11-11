@@ -35,4 +35,18 @@ class Bird:
         self._move(game_framework.frame_time)
 
     def _move(self, elapsed):
+        left = DRAW_WIDTH / 2
+        right = CANVAS_WIDTH - DRAW_WIDTH / 2
         self.x += self.direction * FLY_SPEED_PPS * elapsed
+        # 초과 거리를 보존하며, 긴 프레임의 여러 차례 경계 통과도 반사한다.
+        while self.x < left or self.x > right:
+            if self.x > right:
+                self.x = 2 * right - self.x
+                self.direction = -1
+            else:
+                self.x = 2 * left - self.x
+                self.direction = 1
+        if self.x == left:
+            self.direction = 1
+        elif self.x == right:
+            self.direction = -1
