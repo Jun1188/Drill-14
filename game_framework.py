@@ -32,21 +32,22 @@ def quit():
 
 
 def run(start_mode):
-    global running, stack,frame_time
+    global running, stack, frame_time
     frame_time = 0.0
-    current_time = time.time()
     running = True
     stack = [start_mode]
     try:
         start_mode.init()
+        previous_time = time.perf_counter()
         while running:
+            current_time = time.perf_counter()
+            frame_time = current_time - previous_time
+            previous_time = current_time
             stack[-1].handle_events()
+            if not running:
+                break
             stack[-1].update()
             stack[-1].render()
-            frame_time = time.time() - current_time
-            frame_rate = 1.0 / frame_time
-            current_time += frame_time
-            #print(f'Frame Time: {frame_time} sec, Frame Rate: {frame_rate} fps')
     finally:
         while stack:
             stack.pop().finish()
